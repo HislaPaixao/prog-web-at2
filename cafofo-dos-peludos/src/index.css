@@ -1,0 +1,8 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #f3f4f6;
+  font-family: 'Baloo', cursive, sans-serif;
+}
