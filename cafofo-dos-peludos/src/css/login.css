@@ -55,3 +55,15 @@
 .btn-orange:hover {
   background-color: #e69500 !important;
 }
+
+.login-back-link {
+  display: inline-block;
+  margin-bottom: 16px;
+  color: #4b5563;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.login-back-link:hover {
+  color: #111827;
+}
