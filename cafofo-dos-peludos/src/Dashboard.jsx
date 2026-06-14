@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import RelatorioAdocoes from './RelatorioAdocoes';
 
 export default function Dashboard() {
 
@@ -80,6 +81,8 @@ export default function Dashboard() {
             </p>
           </div>
         </div>
+
+        <RelatorioAdocoes />
       </div>
 
     </div>
