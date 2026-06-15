@@ -12,6 +12,10 @@ export default function Dashboard({ onLogout }) {
     navigate('/');
   };
 
+  const handleGoHome = () => {
+    navigate('/');
+  };
+
   return (
     <div
       style={{
@@ -60,7 +64,29 @@ export default function Dashboard({ onLogout }) {
           </span>
         </div>
 
-        <div>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          {/* Botao Voltar para Home */}
+          <button
+            onClick={handleGoHome}
+            style={{
+              backgroundColor: '#28a745',
+              color: '#ffffff',
+              borderRadius: '8px',
+              fontWeight: 'bold',
+              padding: '10px 24px',
+              fontSize: '15px',
+              border: 'none',
+              cursor: 'pointer',
+              boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+              transition: 'background-color 0.2s',
+            }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '#218838'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = '#28a745'}
+          >
+            Voltar para Home
+          </button>
+
+          {/* Botao Sair */}
           <button
             onClick={handleLogout}
             style={{

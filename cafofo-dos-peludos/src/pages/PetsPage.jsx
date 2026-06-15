@@ -10,6 +10,9 @@ export default function PetsPage() {
   const [filtro, setFiltro] = useState('todos');
   const navigate = useNavigate();
 
+  // Verifica se usuario esta logado
+  const usuarioLogado = localStorage.getItem('usuarioLogado') === 'true';
+
   useEffect(() => {
     carregarPets();
   }, []);
@@ -84,9 +87,12 @@ export default function PetsPage() {
           <p className="text-secondary">Encontre seu novo amigo</p>
         </div>
         <div className="d-flex gap-2">
-          <Link to="/pets/novo" className="btn btn-warning rounded-pill px-4">
-            Novo Pet
-          </Link>
+          {/* Botao Novo Pet so aparece para admin logado */}
+          {usuarioLogado && (
+            <Link to="/pets/novo" className="btn btn-warning rounded-pill px-4">
+              Novo Pet
+            </Link>
+          )}
           <button 
             className="btn btn-outline-secondary rounded-pill"
             onClick={carregarPets}
@@ -136,9 +142,11 @@ export default function PetsPage() {
       {petsFiltrados.length === 0 ? (
         <div className="text-center py-5">
           <p className="text-muted">Nenhum pet encontrado.</p>
-          <Link to="/pets/novo" className="btn btn-warning rounded-pill">
-            Cadastrar Primeiro Pet
-          </Link>
+          {usuarioLogado && (
+            <Link to="/pets/novo" className="btn btn-warning rounded-pill">
+              Cadastrar Primeiro Pet
+            </Link>
+          )}
         </div>
       ) : (
         <div className="row">
@@ -168,8 +176,9 @@ export default function PetsPage() {
                   </p>
                 </div>
 
-                {/* Botões */}
+                {/* Botoes */}
                 <div className="card-footer bg-white border-0 pb-3">
+                  {/* Botao de adocao (sempre visivel) */}
                   {pet.status === 'disponivel' ? (
                     <Link 
                       to="/declaracao" 
@@ -188,22 +197,25 @@ export default function PetsPage() {
                     </button>
                   )}
                   
-                  <div className="d-flex gap-2 justify-content-center">
-                    <button 
-                      className="btn btn-outline-primary rounded-pill px-3"
-                      onClick={() => navigate(`/pets/editar/${pet.id}`)}
-                      title="Editar"
-                    >
-                      Editar
-                    </button>
-                    <button 
-                      className="btn btn-outline-danger rounded-pill px-3"
-                      onClick={() => handleDelete(pet.id, pet.nome)}
-                      title="Excluir"
-                    >
-                      Excluir
-                    </button>
-                  </div>
+                  {/* Botoes de admin (so aparece logado) */}
+                  {usuarioLogado && (
+                    <div className="d-flex gap-2 justify-content-center mt-2">
+                      <button 
+                        className="btn btn-outline-primary rounded-pill px-3"
+                        onClick={() => navigate(`/pets/editar/${pet.id}`)}
+                        title="Editar"
+                      >
+                        Editar
+                      </button>
+                      <button 
+                        className="btn btn-outline-danger rounded-pill px-3"
+                        onClick={() => handleDelete(pet.id, pet.nome)}
+                        title="Excluir"
+                      >
+                        Excluir
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -211,33 +223,35 @@ export default function PetsPage() {
         </div>
       )}
 
-      {/* Estatisticas */}
-      <div className="row mt-5">
-        <div className="col-md-4">
-          <div className="card bg-warning text-dark border-0 shadow-sm" style={{ borderRadius: '16px' }}>
-            <div className="card-body text-center">
-              <h3>{pets.length}</h3>
-              <p className="mb-0 fw-bold">Total de Pets</p>
+      {/* Estatisticas (so admin ve) */}
+      {usuarioLogado && (
+        <div className="row mt-5">
+          <div className="col-md-4">
+            <div className="card bg-warning text-dark border-0 shadow-sm" style={{ borderRadius: '16px' }}>
+              <div className="card-body text-center">
+                <h3>{pets.length}</h3>
+                <p className="mb-0 fw-bold">Total de Pets</p>
+              </div>
+            </div>
+          </div>
+          <div className="col-md-4">
+            <div className="card bg-success text-white border-0 shadow-sm" style={{ borderRadius: '16px' }}>
+              <div className="card-body text-center">
+                <h3>{pets.filter(p => p.status === 'disponivel').length}</h3>
+                <p className="mb-0 fw-bold">Disponiveis</p>
+              </div>
+            </div>
+          </div>
+          <div className="col-md-4">
+            <div className="card bg-info text-white border-0 shadow-sm" style={{ borderRadius: '16px' }}>
+              <div className="card-body text-center">
+                <h3>{pets.filter(p => p.status === 'adotado').length}</h3>
+                <p className="mb-0 fw-bold">Adotados</p>
+              </div>
             </div>
           </div>
         </div>
-        <div className="col-md-4">
-          <div className="card bg-success text-white border-0 shadow-sm" style={{ borderRadius: '16px' }}>
-            <div className="card-body text-center">
-              <h3>{pets.filter(p => p.status === 'disponivel').length}</h3>
-              <p className="mb-0 fw-bold">Disponiveis</p>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-4">
-          <div className="card bg-info text-white border-0 shadow-sm" style={{ borderRadius: '16px' }}>
-            <div className="card-body text-center">
-              <h3>{pets.filter(p => p.status === 'adotado').length}</h3>
-              <p className="mb-0 fw-bold">Adotados</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      )}
     </section>
   );
 }
