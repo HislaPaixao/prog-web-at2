@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import RelatorioAdocoes from './RelatorioAdocoes';
+import GerenciarAdocoes from './components/adocao/GerenciarAdocoes';
 import UsersCrud from './UsersCrud';
 
 export default function Dashboard({ onLogout }) {
@@ -129,6 +130,7 @@ export default function Dashboard({ onLogout }) {
 
         <UsersCrud />
         <RelatorioAdocoes />
+        <GerenciarAdocoes />
       </div>
     </div>
   );
