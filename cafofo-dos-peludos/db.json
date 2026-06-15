@@ -5,8 +5,8 @@
       "nome": "Alex",
       "tipo": "Cachorro",
       "idade": "6 meses",
-      "descricao": "Alex é o explorador do grupo!",
-      "foto": "img/alex.png",
+      "descricao": "Alex e o explorador do grupo!",
+      "foto": "/img/alex.png",
       "status": "disponivel"
     },
     {
@@ -14,18 +14,50 @@
       "nome": "Sicha",
       "tipo": "Cachorro",
       "idade": "3 meses",
-      "descricao": "Sicha é pura fofura! Meiga e carinhosa, ela adora um carinho!",
-      "foto": "img/sicha.png",
-      "status": "disponivel"
+      "descricao": "Sicha e pura fofura! Meiga e carinhosa, ela adora um carinho!",
+      "foto": "/img/sicha.png",
+      "status": "adotado"
     },
     {
       "id": "3",
       "nome": "Mel",
       "tipo": "Gato",
       "idade": "8 meses",
-      "descricao": "Mel é um encanto! Alegre e delicada.",
-      "foto": "img/Mel.png",
+      "descricao": "Mel e um encanto! Alegre e delicada.",
+      "foto": "/img/Mel.png",
       "status": "disponivel"
+    },
+    {
+      "nome": "cachorro quente",
+      "tipo": "Cachorro",
+      "idade": "6 meses",
+      "descricao": "lindo",
+      "foto": "/img/diagrama.png",
+      "status": "disponivel",
+      "id": "PjkA32Kx4cI"
+    }
+  ],
+  "adocoes": [
+    {
+      "id": "101",
+      "petId": "2",
+      "adotante": "Ana Souza",
+      "cidade": "Brasilia - DF",
+      "status": "Aprovada"
+    },
+    {
+      "id": "102",
+      "petId": "1",
+      "adotante": "Carlos Lima",
+      "cidade": "Goiania - GO",
+      "status": "Em analise"
+    },
+    {
+      "id": "103",
+      "petId": "3",
+      "adotante": "Marina Alves",
+      "cidade": "Anapolis - GO",
+      "status": "Entrevista agendada"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

@@ -1,7 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 const API_URL = 'http://localhost:3001/pets';
+
+function normalizarCaminhoImagem(caminho) {
+  if (!caminho) {
+    return '';
+  }
+
+  if (caminho.startsWith('blob:') || caminho.startsWith('http')) {
+    return caminho;
+  }
+
+  return caminho.startsWith('/') ? caminho : `/${caminho}`;
+}
 
 export default function EditPetPage() {
   const { id } = useParams();
@@ -13,23 +25,23 @@ export default function EditPetPage() {
   const [previewUrl, setPreviewUrl] = useState('');
 
   useEffect(() => {
-    carregarPet();
-  }, [id]);
-
-  const carregarPet = async () => {
-    try {
-      const response = await fetch(`${API_URL}/${id}`);
-      if (!response.ok) throw new Error('Erro ao carregar');
-      const pet = await response.json();
-      setFormData(pet);
-      setPreviewUrl(pet.foto || '');
-    } catch (error) {
-      setErro('Erro ao carregar dados do pet.');
-      console.error('Erro:', error);
-    } finally {
-      setLoading(false);
+    async function carregarPetInicial() {
+      try {
+        const response = await fetch(`${API_URL}/${id}`);
+        if (!response.ok) throw new Error('Erro ao carregar');
+        const pet = await response.json();
+        setFormData(pet);
+        setPreviewUrl(normalizarCaminhoImagem(pet.foto || ''));
+      } catch (error) {
+        setErro('Erro ao carregar dados do pet.');
+        console.error('Erro:', error);
+      } finally {
+        setLoading(false);
+      }
     }
-  };
+
+    carregarPetInicial();
+  }, [id]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -39,12 +51,9 @@ export default function EditPetPage() {
   const handleFileChange = (event) => {
     const arquivo = event.target.files?.[0];
     if (arquivo) {
-      // Cria preview local
       const imageUrl = URL.createObjectURL(arquivo);
-      setPreviewUrl(imageUrl);
-      
-      // Salva o caminho relativo (simula upload)
       const caminhoRelativo = `/img/${arquivo.name}`;
+      setPreviewUrl(imageUrl);
       setFormData((current) => ({ ...current, foto: caminhoRelativo }));
     }
   };
@@ -63,11 +72,11 @@ export default function EditPetPage() {
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       if (!response.ok) throw new Error('Erro ao atualizar');
-      
+
       alert('Pet atualizado com sucesso!');
       navigate('/pets');
     } catch (error) {
@@ -105,9 +114,7 @@ export default function EditPetPage() {
         <span className="eyebrow">Edicao</span>
         <h1>Editar {formData?.nome}</h1>
 
-        {erro && (
-          <div className="alert alert-danger rounded-4 mt-3">{erro}</div>
-        )}
+        {erro && <div className="alert alert-danger rounded-4 mt-3">{erro}</div>}
 
         <form className="row g-3 mt-2" onSubmit={handleSubmit}>
           <div className="col-md-6">
@@ -123,10 +130,10 @@ export default function EditPetPage() {
 
           <div className="col-md-6">
             <label className="form-label">Tipo *</label>
-            <select 
-              className="form-select" 
-              name="tipo" 
-              value={formData?.tipo || ''} 
+            <select
+              className="form-select"
+              name="tipo"
+              value={formData?.tipo || ''}
               onChange={handleChange}
             >
               <option>Cachorro</option>
@@ -137,21 +144,21 @@ export default function EditPetPage() {
 
           <div className="col-md-6">
             <label className="form-label">Idade *</label>
-            <input 
-              className="form-control" 
-              name="idade" 
-              value={formData?.idade || ''} 
-              onChange={handleChange} 
-              required 
+            <input
+              className="form-control"
+              name="idade"
+              value={formData?.idade || ''}
+              onChange={handleChange}
+              required
             />
           </div>
 
           <div className="col-md-6">
             <label className="form-label">Status</label>
-            <select 
-              className="form-select" 
-              name="status" 
-              value={formData?.status || ''} 
+            <select
+              className="form-select"
+              name="status"
+              value={formData?.status || ''}
               onChange={handleChange}
             >
               <option value="disponivel">Disponivel</option>
@@ -160,7 +167,6 @@ export default function EditPetPage() {
             </select>
           </div>
 
-          {/* Campo de upload de imagem */}
           <div className="col-12">
             <label className="form-label">Foto do Pet</label>
             <input
@@ -174,7 +180,6 @@ export default function EditPetPage() {
             </small>
           </div>
 
-          {/* Preview da imagem */}
           {previewUrl && (
             <div className="col-12">
               <div className="position-relative d-inline-block">
@@ -186,7 +191,7 @@ export default function EditPetPage() {
                     maxHeight: '250px',
                     borderRadius: '12px',
                     objectFit: 'cover',
-                    border: '2px solid #dee2e6'
+                    border: '2px solid #dee2e6',
                   }}
                 />
                 <button
@@ -199,7 +204,7 @@ export default function EditPetPage() {
                     width: '30px',
                     height: '30px',
                     padding: '0',
-                    lineHeight: '1'
+                    lineHeight: '1',
                   }}
                   title="Remover imagem"
                 >
@@ -214,7 +219,6 @@ export default function EditPetPage() {
             </div>
           )}
 
-          {/* Placeholder quando nao tem imagem */}
           {!previewUrl && (
             <div className="col-12">
               <div
@@ -226,7 +230,7 @@ export default function EditPetPage() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: '#f8f9fa'
+                  backgroundColor: '#f8f9fa',
                 }}
               >
                 <span className="text-muted">Sem foto</span>
@@ -236,27 +240,27 @@ export default function EditPetPage() {
 
           <div className="col-12">
             <label className="form-label">Descricao *</label>
-            <textarea 
-              className="form-control" 
-              name="descricao" 
-              rows="5" 
-              value={formData?.descricao || ''} 
-              onChange={handleChange} 
-              required 
+            <textarea
+              className="form-control"
+              name="descricao"
+              rows="5"
+              value={formData?.descricao || ''}
+              onChange={handleChange}
+              required
             />
           </div>
 
           <div className="col-12 d-flex gap-2">
-            <button 
-              type="submit" 
-              className="btn btn-warning rounded-pill px-4" 
+            <button
+              type="submit"
+              className="btn btn-warning rounded-pill px-4"
               disabled={saving}
             >
               {saving ? 'Salvando...' : 'Salvar'}
             </button>
-            <button 
-              type="button" 
-              className="btn btn-outline-secondary rounded-pill px-4" 
+            <button
+              type="button"
+              className="btn btn-outline-secondary rounded-pill px-4"
               onClick={() => navigate('/pets')}
             >
               Cancelar
