@@ -15,6 +15,7 @@ import PetsPage from './pages/PetsPage';
 import VolunteerFinishPage from './pages/VolunteerFinishPage';
 import VolunteerFormPage from './pages/VolunteerFormPage';
 import VolunteerIntroPage from './pages/VolunteerIntroPage';
+import EditPetPage from './pages/EditPetPage';
 
 export default function App() {
   const [usuarioLogado, setUsuarioLogado] = useState(
@@ -62,6 +63,7 @@ export default function App() {
           <Route path="/voluntariado/finalizado" element={<VolunteerFinishPage />} />
           <Route path="/faq" element={<FaqPage />} />
           <Route path="/pets/novo" element={<AddPetPage />} />
+          <Route path="/pets/editar/:id" element={<EditPetPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

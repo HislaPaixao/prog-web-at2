@@ -1,0 +1,32 @@
+{
+  "pets": [
+    {
+      "id": "1",
+      "nome": "Alex",
+      "tipo": "Cachorro",
+      "idade": "6 meses",
+      "descricao": "Alex é o explorador do grupo!",
+      "foto": "img/alex.png",
+      "status": "disponivel"
+    },
+    {
+      "id": "2",
+      "nome": "Sicha",
+      "tipo": "Cachorro",
+      "idade": "3 meses",
+      "descricao": "Sicha é pura fofura! Meiga e carinhosa, ela adora um carinho!",
+      "foto": "img/sicha.png",
+      "status": "disponivel"
+    },
+    {
+      "id": "3",
+      "nome": "Mel",
+      "tipo": "Gato",
+      "idade": "8 meses",
+      "descricao": "Mel é um encanto! Alegre e delicada.",
+      "foto": "img/Mel.png",
+      "status": "disponivel"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
