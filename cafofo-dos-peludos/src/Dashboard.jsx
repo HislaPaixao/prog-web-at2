@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import RelatorioAdocoes from './RelatorioAdocoes';
+import UsersCrud from './UsersCrud';
 
 export default function Dashboard({ onLogout }) {
   const navigate = useNavigate();
@@ -100,6 +101,7 @@ export default function Dashboard({ onLogout }) {
           </div>
         </div>
 
+        <UsersCrud />
         <RelatorioAdocoes />
       </div>
     </div>
