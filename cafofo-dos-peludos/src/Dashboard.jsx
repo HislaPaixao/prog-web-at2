@@ -129,7 +129,6 @@ export default function Dashboard({ onLogout }) {
         </div>
 
         <UsersCrud />
-        <RelatorioAdocoes />
         <GerenciarAdocoes />
       </div>
     </div>

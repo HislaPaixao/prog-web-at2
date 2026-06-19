@@ -1,94 +1,240 @@
-import React, { useState } from 'react';
-import { adocoesBase, petsBase } from '../../data/relatorioData'; // Ajustado para voltar duas pastas (de Adocao para components, de components para src)
-import AdocaoForm from './AdocaoForm';
-import AdocaoTabela from './AdocaoTabela';
+import { useState, useEffect } from 'react';
 
-function lerListaLocalStorage(chave, listaPadrao) {
-  try {
-    const valor = localStorage.getItem(chave);
-    if (!valor) return listaPadrao;
-    const lista = JSON.parse(valor);
-    return Array.isArray(lista) && lista.length > 0 ? lista : listaPadrao;
-  } catch {
-    return listaPadrao;
-  }
-}
+const ADOCOES_API = 'http://localhost:3001/adocoes';
+const PETS_API = 'http://localhost:3001/pets';
 
 export default function GerenciarAdocoes() {
-  const [pets] = useState(() => lerListaLocalStorage('pets', petsBase));
-  const [adocoes, setAdocoes] = useState(() => lerListaLocalStorage('adocoes', adocoesBase));
+  const [adocoes, setAdocoes] = useState([]);
+  const [pets, setPets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editando, setEditando] = useState(null);
+  const [statusEdit, setStatusEdit] = useState('');
 
-  const [petId, setPetId] = useState('');
-  const [nomeAdotante, setNomeAdotante] = useState('');
-  const [status, setStatus] = useState('Pendente');
-  const [idEmEdicao, setIdEmEdicao] = useState(null);
+  useEffect(() => {
+    carregarDados();
+  }, []);
 
-  const relatorio = adocoes.map((adocao) => {
-    const petRelacionado = pets.find((pet) => pet.id === Number(adocao.petId));
-    return {
-      ...adocao,
-      nomePet: petRelacionado?.nome ?? 'Pet não encontrado',
-      especiePet: petRelacionado?.especie ?? '-',
-      idadePet: petRelacionado?.idade ?? '-',
-    };
-  });
+  const carregarDados = async () => {
+    try {
+      setLoading(true);
+      const [resAdocoes, resPets] = await Promise.all([
+        fetch(ADOCOES_API),
+        fetch(PETS_API)
+      ]);
 
-  const lidarComSalvar = (e) => {
-    e.preventDefault();
-    if (!petId || !nomeAdotante) {
-      alert('Por favor, preencha todos os campos obrigatórios!');
-      return;
+      if (!resAdocoes.ok || !resPets.ok) throw new Error('Erro ao carregar');
+
+      const dadosAdocoes = await resAdocoes.json();
+      const dadosPets = await resPets.json();
+
+      // Faz o JOIN entre adocoes e pets
+      const adocoesCompletas = dadosAdocoes.map(adocao => {
+        const pet = dadosPets.find(p => p.id == adocao.petId);
+        return {
+          ...adocao,
+          nomePet: pet ? pet.nome : 'Pet nao encontrado',
+          especiePet: pet ? pet.tipo : '-',
+          idadePet: pet ? pet.idade : '-'
+        };
+      });
+
+      setAdocoes(adocoesCompletas);
+      setPets(dadosPets);
+    } catch (error) {
+      console.error('Erro:', error);
+    } finally {
+      setLoading(false);
     }
-
-    let novasAdocoes;
-    if (idEmEdicao !== null) {
-      novasAdocoes = adocoes.map((item) =>
-        item.id === idEmEdicao ? { ...item, petId: Number(petId), nomeAdotante, status } : item
-      );
-      setIdEmEdicao(null);
-    } else {
-      novasAdocoes = [...adocoes, { id: Date.now(), petId: Number(petId), nomeAdotante, status }];
-    }
-
-    setAdocoes(novasAdocoes);
-    localStorage.setItem('adocoes', JSON.stringify(novasAdocoes));
-    window.location.reload();
-    limparFormulario();
   };
 
   const iniciarEdicao = (adocao) => {
-    setIdEmEdicao(adocao.id);
-    setPetId(adocao.petId);
-    setNomeAdotante(adocao.nomeAdotante || adocao.adotante || '');
-    setStatus(adocao.status || 'Pendente');
+    setEditando(adocao.id);
+    setStatusEdit(adocao.status);
   };
 
-  const eliminarAdocao = (id) => {
-    if (window.confirm('Tem a certeza que deseja eliminar esta adoção?')) {
-      const listaFiltrada = adocoes.filter((item) => item.id !== id);
-      setAdocoes(listaFiltrada);
-      localStorage.setItem('adocoes', JSON.stringify(listaFiltrada));
-      window.location.reload();
+  const cancelarEdicao = () => {
+    setEditando(null);
+    setStatusEdit('');
+  };
+
+  const salvarEdicao = async (adocao) => {
+    try {
+      const adocaoAtualizada = { ...adocao, status: statusEdit };
+
+      const response = await fetch(`${ADOCOES_API}/${adocao.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(adocaoAtualizada)
+      });
+
+      if (!response.ok) throw new Error('Erro ao atualizar');
+
+      // Se aprovada, atualiza status do pet para 'adotado'
+      if (statusEdit === 'Aprovada') {
+        const pet = pets.find(p => p.id == adocao.petId);
+        if (pet) {
+          await fetch(`${PETS_API}/${adocao.petId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'adotado' })
+          });
+        }
+      }
+
+      // Se rejeitada, volta pet para 'disponivel'
+      if (statusEdit === 'Rejeitada') {
+        const pet = pets.find(p => p.id == adocao.petId);
+        if (pet && pet.status === 'adotado') {
+          await fetch(`${PETS_API}/${adocao.petId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'disponivel' })
+          });
+        }
+      }
+
+      setAdocoes(adocoes.map(a => a.id === adocao.id ? adocaoAtualizada : a));
+      setEditando(null);
+      alert('Adocao atualizada com sucesso!');
+    } catch (error) {
+      alert('Erro ao atualizar adocao.');
+      console.error('Erro:', error);
     }
   };
 
-  const limparFormulario = () => {
-    setPetId(''); setNomeAdotante(''); setStatus('Pendente'); setIdEmEdicao(null);
+  const eliminarAdocao = async (id) => {
+    if (window.confirm('Tem certeza que deseja eliminar esta adocao?')) {
+      try {
+        const adocao = adocoes.find(a => a.id === id);
+
+        await fetch(`${ADOCOES_API}/${id}`, { method: 'DELETE' });
+
+        // Volta o pet para disponivel se estava adotado
+        if (adocao && adocao.status === 'Aprovada') {
+          await fetch(`${PETS_API}/${adocao.petId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'disponivel' })
+          });
+        }
+
+        setAdocoes(adocoes.filter(a => a.id !== id));
+        alert('Adocao eliminada com sucesso!');
+      } catch (error) {
+        alert('Erro ao eliminar adocao.');
+        console.error('Erro:', error);
+      }
+    }
   };
 
+  const getStatusBadge = (status) => {
+    const statusMap = {
+      'Aprovada': 'bg-success',
+      'Rejeitada': 'bg-danger',
+      'Em analise': 'bg-info',
+      'Entrevista agendada': 'bg-primary',
+      'Pendente': 'bg-warning text-dark'
+    };
+    const classe = statusMap[status] || 'bg-secondary';
+    return <span className={`badge ${classe}`}>{status}</span>;
+  };
+
+  if (loading) {
+    return (
+      <div className="text-center py-4">
+        <div className="spinner-border text-warning" role="status" />
+        <p className="mt-2">Carregando adocoes...</p>
+      </div>
+    );
+  }
+
   return (
-    <section className="container mt-4">
-      <AdocaoForm 
-        pets={pets} petId={petId} setPetId={setPetId}
-        nomeAdotante={nomeAdotante} setNomeAdotante={setNomeAdotante}
-        status={status} setStatus={setStatus} idEmEdicao={idEmEdicao}
-        lidarComSalvar={lidarComSalvar} limparFormulario={limparFormulario}
-      />
-      <AdocaoTabela 
-        relatorio={relatorio} 
-        iniciarEdicao={iniciarEdicao} 
-        eliminarAdocao={eliminarAdocao} 
-      />
-    </section>
+    <div className="card p-4 shadow-sm mt-4">
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h4 className="mb-0">Listagem e Relatorio de Adocoes</h4>
+        <button className="btn btn-outline-secondary btn-sm rounded-pill" onClick={carregarDados}>
+          Atualizar
+        </button>
+      </div>
+
+      {adocoes.length === 0 ? (
+        <p className="text-muted">Nenhuma adocao registada.</p>
+      ) : (
+        <div className="table-responsive">
+          <table className="table table-striped table-hover align-middle">
+            <thead className="table-dark">
+              <tr>
+                <th>Pet</th>
+                <th>Especie</th>
+                <th>Idade</th>
+                <th>Adotante</th>
+                <th>Status</th>
+                <th className="text-center">Acoes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {adocoes.map((item) => (
+                <tr key={item.id}>
+                  <td>{item.nomePet}</td>
+                  <td>{item.especiePet}</td>
+                  <td>{item.idadePet}</td>
+                  <td>{item.adotante || '-'}</td>
+                  <td>
+                    {editando === item.id ? (
+                      <select
+                        className="form-select form-select-sm"
+                        value={statusEdit}
+                        onChange={(e) => setStatusEdit(e.target.value)}
+                      >
+                        <option value="Pendente">Pendente</option>
+                        <option value="Em analise">Em analise</option>
+                        <option value="Entrevista agendada">Entrevista agendada</option>
+                        <option value="Aprovada">Aprovada</option>
+                        <option value="Rejeitada">Rejeitada</option>
+                      </select>
+                    ) : (
+                      getStatusBadge(item.status)
+                    )}
+                  </td>
+                  <td className="text-center">
+                    {editando === item.id ? (
+                      <>
+                        <button
+                          className="btn btn-sm btn-success me-2"
+                          onClick={() => salvarEdicao(item)}
+                        >
+                          Salvar
+                        </button>
+                        <button
+                          className="btn btn-sm btn-outline-secondary"
+                          onClick={cancelarEdicao}
+                        >
+                          Cancelar
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          className="btn btn-sm btn-outline-warning me-2"
+                          onClick={() => iniciarEdicao(item)}
+                        >
+                          Editar
+                        </button>
+                        <button
+                          className="btn btn-sm btn-outline-danger"
+                          onClick={() => eliminarAdocao(item.id)}
+                        >
+                          Eliminar
+                        </button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
   );
 }

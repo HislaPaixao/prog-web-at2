@@ -43,14 +43,20 @@
       "petId": "2",
       "adotante": "Ana Souza",
       "cidade": "Brasilia - DF",
-      "status": "Aprovada"
+      "status": "Aprovada",
+      "nomePet": "Sicha",
+      "especiePet": "Cachorro",
+      "idadePet": "3 meses"
     },
     {
       "id": "102",
       "petId": "1",
       "adotante": "Carlos Lima",
       "cidade": "Goiania - GO",
-      "status": "Em analise"
+      "status": "Rejeitada",
+      "nomePet": "Alex",
+      "especiePet": "Cachorro",
+      "idadePet": "6 meses"
     },
     {
       "id": "103",

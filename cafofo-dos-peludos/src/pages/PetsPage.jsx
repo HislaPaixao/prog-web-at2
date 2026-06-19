@@ -211,12 +211,13 @@ export default function PetsPage() {
                 <div className="card-footer bg-white border-0 pb-3">
                   {pet.status === 'disponivel' ? (
                     <Link
-                      to="/declaracao"
+                      to={`/declaracao?petId=${pet.id}`}
                       className="btn btn-info btn-block rounded-pill mb-2"
                       style={{ width: '100%' }}
                     >
                       Quero Adotar
                     </Link>
+                    
                   ) : (
                     <button
                       className="btn btn-secondary btn-block rounded-pill mb-2"
